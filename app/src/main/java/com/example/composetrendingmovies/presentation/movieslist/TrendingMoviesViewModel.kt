@@ -20,7 +20,6 @@ import javax.inject.Inject
 class TrendingMoviesViewModel @Inject constructor(private val trendingMoviesUseCase: GetTrendingMoviesUseCase) :
     ViewModel() {
 
-    var selectedMovieId: Int? = null
     private var _trendingMoviesList = mutableStateOf(listOf<Movie>())
     val trendingMoviesList: MutableState<List<Movie>>
         get() = _trendingMoviesList
