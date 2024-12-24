@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.jetbrainsKotlinAndroid)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hiltAndroidPlugin)
-    kotlin("kapt")
+    alias(libs.plugins.composeCompiler)
 }
 
 android {
@@ -68,8 +68,9 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.hilt)
     implementation(libs.hilt.navigation.compose)
-    kapt(libs.hilt.android.compiler)
-    kapt(libs.hilt.compiler)
+    implementation(libs.androidx.junit.ktx)
+    ksp(libs.hilt.android.compiler)
+    ksp(libs.hilt.compiler)
     implementation(libs.androidx.lifecycle.viemmodel.ktx)
     implementation(libs.androidx.lifecycle.viemmodel.compose)
     implementation(libs.glide)
@@ -85,8 +86,4 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-}
-
-kapt {
-    correctErrorTypes = true
 }
