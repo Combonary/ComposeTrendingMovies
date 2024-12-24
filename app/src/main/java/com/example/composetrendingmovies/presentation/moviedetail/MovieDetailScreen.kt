@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -97,7 +99,8 @@ fun MovieDetailScreenContent(
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState()),
                 color = MaterialTheme.colorScheme.background
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
@@ -117,9 +120,8 @@ fun MovieDetailScreenContent(
                     ) {
                         GlideImage(
                             modifier = Modifier
-                                .height(324.dp)
-                                .width(324.dp)
-                                .fillMaxSize()
+                                .height(1000.dp)
+                                .width(600.dp)
                                 .align(Alignment.CenterHorizontally)
                                 .clip(RoundedCornerShape(2.dp)),
                             model = Constants.IMAGE_URL + movie?.poster_path,
@@ -127,7 +129,9 @@ fun MovieDetailScreenContent(
                             loading = placeholder(R.drawable.round_downloading_24),
                             failure = placeholder(R.drawable.round_downloading_24)
                         )
-                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
                         movie?.overview?.let {
                             Text(
                                 text = it
