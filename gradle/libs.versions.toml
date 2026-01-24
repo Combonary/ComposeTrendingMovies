@@ -1,21 +1,22 @@
 [versions]
-agp = "8.7.3"
+agp = "9.0.0"
 javapoet = "1.13.0"
-kotlin = "2.1.0"
-coreKtx = "1.15.0"
+kotlin = "2.3.0"
+coreKtx = "1.17.0"
 junit = "4.13.2"
-junitVersion = "1.2.1"
-espressoCore = "3.6.1"
-lifecycleRuntimeKtx = "2.8.7"
-activityCompose = "1.9.3"
-composeBom = "2024.12.01"
-retrofit = "2.9.0"
-okhttp = "4.12.0"
-glide = "1.0.0-beta01"
-hilt-android = "2.51.1"
-ksp = "2.1.0-1.0.29"
-hiltComposeNavigation = "1.2.0"
-junitKtx = "1.2.1"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
+lifecycleRuntimeKtx = "2.10.0"
+activityCompose = "1.12.2"
+composeBom = "2026.01.00"
+retrofit = "3.0.0"
+okhttp = "5.3.2"
+glide = "1.0.0-beta08"
+hilt-android = "2.59"
+ksp = "2.3.4"
+hiltComposeNavigation = "1.3.0"
+junitKtx = "1.3.0"
+materialIconsExtended = "1.7.8"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -45,6 +46,7 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }
 glide = { group = "com.github.bumptech.glide", name = "compose", version.ref = "glide" }
 androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junitKtx" }
+androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIconsExtended" }
 
 
 [plugins]
@@ -53,5 +55,3 @@ jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "k
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hiltAndroidPlugin = { id = "com.google.dagger.hilt.android", version.ref = "hilt-android" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
-
