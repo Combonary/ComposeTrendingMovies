@@ -2,20 +2,19 @@ package com.example.composetrendingmovies.presentation.moviedetail
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.composetrendingmovies.domain.model.MovieDescription
 import com.example.composetrendingmovies.domain.model.ServerResult
 import com.example.composetrendingmovies.domain.usecase.GetMovieUseCase
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 
-@HiltViewModel(assistedFactory = MovieDetailViewModel.MovieDetailViewModelFactory::class)
-class MovieDetailViewModel @AssistedInject constructor(
-    @Assisted private val id: Int,
+@HiltViewModel
+class MovieDetailViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val movieDetailUseCase: GetMovieUseCase
 ): ViewModel() {
 
@@ -27,14 +26,11 @@ class MovieDetailViewModel @AssistedInject constructor(
     val apiStatus: MutableState<ServerResult.Status>
         get() = _apiStatus
 
-    @AssistedFactory
-    interface MovieDetailViewModelFactory {
-        fun create(id: Int): MovieDetailViewModel
-    }
-
     init {
-        viewModelScope.launch {
-            getMovie(id)
+        savedStateHandle.get<Int>("movieId")?.let { id ->
+            viewModelScope.launch {
+                getMovie(id)
+            }
         }
     }
 

@@ -31,7 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
@@ -43,10 +43,7 @@ import com.example.composetrendingmovies.utils.Constants
 
 @Composable
 fun MovieDetailScreen(
-    id: Int,
-    viewModel: MovieDetailViewModel = hiltViewModel<MovieDetailViewModel, MovieDetailViewModel.MovieDetailViewModelFactory> { factory ->
-        factory.create(id)
-    },
+    viewModel: MovieDetailViewModel = hiltViewModel(),
     onBackClicked: () -> Unit
 ) {
     val movie by remember {

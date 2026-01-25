@@ -9,11 +9,9 @@ import dagger.hilt.android.AndroidEntryPoint
 class MovieDetailActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val id = intent.getIntExtra("movie_id", 0)
 
         setContent {
             MovieDetailScreen (
-                id = id,
                 onBackClicked = { onBackPressedDispatcher.onBackPressed() }
             )
         }
