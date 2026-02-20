@@ -11,7 +11,7 @@ object ErrorUtil {
             retrofit.responseBodyConverter<ErrorResponse>(ErrorResponse::class.java, arrayOfNulls(0))
         return try {
             return parser.convert(response.errorBody()!!)
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             ErrorResponse()
         }
     }

@@ -14,31 +14,34 @@ class TrendingMoviesApi @Inject constructor(
     private val retrofitService: RetrofitService
 ) {
 
-    private suspend fun <T> getResponse(request: suspend() -> Response<T>, errorMessage: String): ServerResult<T> {
+    private suspend fun <T> getResponse(
+        request: suspend () -> Response<T>,
+        errorMessage: String
+    ): ServerResult<T> {
         return try {
             val result = request.invoke()
-            if (result.isSuccessful){
+            if (result.isSuccessful) {
                 return ServerResult.success(result.body())
             } else {
                 val errorResponse = ErrorUtil.parseError(result, retrofit)
                 ServerResult.error(errorResponse?.errorMessage ?: errorMessage, errorResponse)
             }
-        } catch (e: Throwable){
-            println(Log.d("API", e.message?: "none"))
+        } catch (e: Throwable) {
+            println(Log.d("API", e.message ?: "none"))
             ServerResult.error("Unknown Error", null)
         }
     }
 
     suspend fun getTrendingMoviesList(): ServerResult<TrendingMovies> {
         return getResponse(
-            request = {retrofitService.getTrendingMovies()},
+            request = { retrofitService.getTrendingMovies() },
             errorMessage = "Error fetching trending movies"
         )
     }
 
     suspend fun getMovie(id: Int): ServerResult<MovieDescription> {
         return getResponse(
-            request = {retrofitService.getMovie(id)},
+            request = { retrofitService.getMovie(id) },
             errorMessage = "Error fetching Movie Description"
         )
     }

@@ -1,33 +1,31 @@
 package com.example.composetrendingmovies.presentation.moviedetail
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.composetrendingmovies.domain.model.MovieDescription
 import com.example.composetrendingmovies.domain.model.ServerResult
 import com.example.composetrendingmovies.domain.usecase.GetMovieUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @HiltViewModel
 class MovieDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val movieDetailUseCase: GetMovieUseCase
-): ViewModel() {
+) : ViewModel() {
 
-    private var _movie: MutableState<MovieDescription?> = mutableStateOf(null)
-    val movie: MutableState<MovieDescription?>
-        get() = _movie
+    private val _uiState: MutableStateFlow<MovieDetailScreenUiState> =
+        MutableStateFlow(MovieDetailScreenUiState())
+    val uiState: StateFlow<MovieDetailScreenUiState> =
+        _uiState.asStateFlow()
 
-    private var _apiStatus: MutableState<ServerResult.Status> = mutableStateOf(ServerResult.Status.LOADING)
-    val apiStatus: MutableState<ServerResult.Status>
-        get() = _apiStatus
 
     init {
-        savedStateHandle.get<Int>("movieId")?.let { id ->
+        savedStateHandle.get<Int>("movie_id")?.let { id ->
             viewModelScope.launch {
                 getMovie(id)
             }
@@ -35,9 +33,20 @@ class MovieDetailViewModel @Inject constructor(
     }
 
     private suspend fun getMovie(id: Int) {
-        movieDetailUseCase.invoke(id).collect {
-            _apiStatus.value = it.status
-            _movie.value = it.data
+        movieDetailUseCase.invoke(id).collect { serverResult ->
+            when (serverResult.status) {
+                ServerResult.Status.SUCCESS -> {
+                    _uiState.value = MovieDetailScreenUiState(isLoading = false, movie = serverResult.data)
+                }
+
+                ServerResult.Status.ERROR -> {
+                    _uiState.value = MovieDetailScreenUiState(isLoading = false, error = serverResult.message)
+                }
+
+                ServerResult.Status.LOADING -> {
+                    _uiState.value = MovieDetailScreenUiState(isLoading = true)
+                }
+            }
         }
     }
 }

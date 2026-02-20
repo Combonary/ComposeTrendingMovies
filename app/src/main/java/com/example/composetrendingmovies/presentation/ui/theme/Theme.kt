@@ -1,4 +1,4 @@
-package com.example.composetrendingmovies.ui.theme
+package com.example.composetrendingmovies.presentation.ui.theme
 
 import android.app.Activity
 import android.os.Build
@@ -13,6 +13,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
@@ -56,9 +57,15 @@ fun ComposeTrendingMoviesTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            val window = (view.context as Activity).window
+            val window = (view.context as? Activity)?.window ?: return@SideEffect
+            // Set the status bar color (API 21+). Suppress deprecation warning where the platform marks this as deprecated.
+            @Suppress("DEPRECATION")
             window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            // Use WindowCompat + WindowInsetsControllerCompat to control icon color.
+            val insetsController = WindowCompat.getInsetsController(window, view)
+            // Decide whether to use dark icons based on color luminance (true -> dark icons)
+            val useDarkIcons = ColorUtils.calculateLuminance(colorScheme.primary.toArgb()) > 0.5
+            insetsController.isAppearanceLightStatusBars = useDarkIcons
         }
     }
 
