@@ -1,5 +1,7 @@
+### Android ###
 # Gradle files
 .gradle/
+gradle
 build/
 
 # Local configuration file (sdk path, etc)
@@ -31,3 +33,6 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+### Android Patch ###
+gen-external-apklibs
