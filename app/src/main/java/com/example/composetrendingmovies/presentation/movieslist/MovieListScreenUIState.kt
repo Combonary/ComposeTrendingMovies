@@ -1,9 +1,9 @@
 package com.example.composetrendingmovies.presentation.movieslist
 
-import com.example.composetrendingmovies.domain.model.Movie
+import io.github.kotlin.imdb.model.MovieEntity
 
 data class MovieListScreenUIState(
     val isLoading: Boolean = false,
-    val movies: List<Movie>? = null,
+    val movies: List<MovieEntity>? = null,
     val error: String? = null
 )

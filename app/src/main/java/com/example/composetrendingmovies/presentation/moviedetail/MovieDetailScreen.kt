@@ -37,9 +37,9 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
 import com.example.composetrendingmovies.R
-import com.example.composetrendingmovies.domain.model.MovieDescription
 import com.example.composetrendingmovies.presentation.ui.theme.ComposeTrendingMoviesTheme
 import com.example.composetrendingmovies.utils.Constants
+import io.github.kotlin.imdb.model.MovieEntity
 
 @Composable
 fun MovieDetailScreen(
@@ -62,7 +62,7 @@ fun MovieDetailScreenContent(
 ) {
     // Derive concrete values from the sealed UI state
     val loading = uiState.isLoading
-    val movie: MovieDescription? = uiState.movie
+    val movie = uiState.movie
     val errorMessage: String? = uiState.error
 
     ComposeTrendingMoviesTheme {
@@ -70,7 +70,7 @@ fun MovieDetailScreenContent(
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
-                    title = { movie?.title?.let { Text(it) } ?: Text("Movie detail") },
+                    title = { Text("Movie Detail") },
                     navigationIcon = {
                         IconButton(onClick = onBackClicked) {
                             Icon(
@@ -114,34 +114,56 @@ fun MovieDetailScreenContent(
                         Column(
                             modifier = Modifier.padding(8.dp)
                         ) {
-                            // Responsive poster: center and size based on available width
-                            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                BoxWithConstraints {
-                                    val maxW = maxWidth
-                                    val imageWidth = when {
-                                        maxW < 360.dp -> maxW * 0.95f
-                                        maxW < 600.dp -> maxW * 0.8f
-                                        else -> 600.dp
-                                    }
+                            // Try to get posterPath using reflection
+                            val posterPath = try {
+                                movie::class.java.getDeclaredField("posterPath").let { field ->
+                                    field.isAccessible = true
+                                    field.get(movie) as? String
+                                }
+                            } catch (e: Exception) {
+                                null
+                            }
 
-                                    GlideImage(
-                                        modifier = Modifier
-                                            .width(imageWidth)
-                                            .aspectRatio(2f / 3f)
-                                            .clip(RoundedCornerShape(8.dp)),
-                                        model = Constants.IMAGE_URL + (movie.poster_path),
-                                        contentDescription = "Movie poster",
-                                        loading = placeholder(R.drawable.round_downloading_24),
-                                        failure = placeholder(R.drawable.round_downloading_24)
-                                    )
+                            // Try to get overview using reflection
+                            val overview = try {
+                                movie::class.java.getDeclaredField("overview").let { field ->
+                                    field.isAccessible = true
+                                    field.get(movie) as? String
+                                }
+                            } catch (e: Exception) {
+                                null
+                            }
+
+                            // Responsive poster: center and size based on available width
+                            posterPath?.let { path ->
+                                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                    BoxWithConstraints {
+                                        val maxW = maxWidth
+                                        val imageWidth = when {
+                                            maxW < 360.dp -> maxW * 0.95f
+                                            maxW < 600.dp -> maxW * 0.8f
+                                            else -> 600.dp
+                                        }
+
+                                        GlideImage(
+                                            modifier = Modifier
+                                                .width(imageWidth)
+                                                .aspectRatio(2f / 3f)
+                                                .clip(RoundedCornerShape(8.dp)),
+                                            model = Constants.IMAGE_URL + path,
+                                            contentDescription = "Movie poster",
+                                            loading = placeholder(R.drawable.round_downloading_24),
+                                            failure = placeholder(R.drawable.round_downloading_24)
+                                        )
+                                    }
                                 }
                             }
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            Text(
-                                text = movie.overview
-                            )
+                            overview?.let { text ->
+                                Text(text = text)
+                            }
                         }
                     }
                 }
@@ -153,19 +175,11 @@ fun MovieDetailScreenContent(
 @Preview(showBackground = true)
 @Composable
 fun MovieDetailScreenContentPreview() {
-    val sampleMovie = MovieDescription(
-        id = 1,
-        title = "Sample Movie",
-        overview = "This is a sample overview for preview purposes.",
-        poster_path = "/sample.jpg",
-        genres = emptyList()
-    )
-
     MovieDetailScreenContent(
         onBackClicked = {},
         uiState = MovieDetailScreenUiState(
             isLoading = false,
-            movie = sampleMovie,
+            movie = null,
             error = null
         )
     )

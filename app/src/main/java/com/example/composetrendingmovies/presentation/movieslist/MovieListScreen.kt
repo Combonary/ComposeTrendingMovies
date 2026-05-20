@@ -44,14 +44,13 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
 import com.example.composetrendingmovies.R
-import com.example.composetrendingmovies.domain.model.Movie
 import com.example.composetrendingmovies.presentation.ui.theme.ComposeTrendingMoviesTheme
 import com.example.composetrendingmovies.utils.Constants
 import com.example.composetrendingmovies.utils.GenreMap
 
 @Composable
 fun MovieListScreen(
-    viewModel: TrendingMoviesViewModel = viewModel(),
+    viewModel: MovieListViewModel = viewModel(),
     onBackClicked: () -> Unit,
     onMovieItemClicked: (Int) -> Unit
 ) {
@@ -118,9 +117,9 @@ fun MoviesListScreenContent(
                         LazyColumn(Modifier.fillMaxSize()) {
                             items(uiState.movies) { movie ->
                                 MovieItem(
-                                    imageUrl = movie.poster_path,
+                                    imageUrl = movie.posterPath,
                                     movieName = movie.title,
-                                    summary = GenreMap.getGenre(movie.genre_ids),
+                                    summary = GenreMap.getGenre(movie.genreIds),
                                     movieId = movie.id,
                                     onItemSelected = { onMovieItemClicked(it) }
                                 )
@@ -137,7 +136,7 @@ fun MoviesListScreenContent(
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun MovieItem(
-    imageUrl: String,
+    imageUrl: String?,
     movieName: String,
     summary: String,
     movieId: Int,
@@ -206,26 +205,6 @@ fun MovieItem(
 @Composable
 fun MovieListScreenPreview() {
     MoviesListScreenContent(
-        uiState = MovieListScreenUIState(
-            movies = listOf(
-                Movie(
-                    adult = false,
-                    backdrop_path = "",
-                    genre_ids = listOf(28),
-                    vote_count = 100,
-                    original_language = "en",
-                    original_title = "Dummy Movie",
-                    id = 1,
-                    title = "Dummy Movie",
-                    video = false,
-                    vote_average = 7.5,
-                    poster_path = "",
-                    overview = "This is a dummy movie for preview.",
-                    release_date = "2023-01-01",
-                    popularity = 100.0,
-                    media_type = "movie"
-                )
-            )
-        )
+        uiState = MovieListScreenUIState()
     )
 }
