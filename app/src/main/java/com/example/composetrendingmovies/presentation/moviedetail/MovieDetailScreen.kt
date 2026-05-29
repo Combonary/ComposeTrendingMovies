@@ -114,25 +114,8 @@ fun MovieDetailScreenContent(
                         Column(
                             modifier = Modifier.padding(8.dp)
                         ) {
-                            // Try to get posterPath using reflection
-                            val posterPath = try {
-                                movie::class.java.getDeclaredField("posterPath").let { field ->
-                                    field.isAccessible = true
-                                    field.get(movie) as? String
-                                }
-                            } catch (e: Exception) {
-                                null
-                            }
-
-                            // Try to get overview using reflection
-                            val overview = try {
-                                movie::class.java.getDeclaredField("overview").let { field ->
-                                    field.isAccessible = true
-                                    field.get(movie) as? String
-                                }
-                            } catch (e: Exception) {
-                                null
-                            }
+                            val posterPath = movie.posterPath
+                            val overview = movie.overview
 
                             // Responsive poster: center and size based on available width
                             posterPath?.let { path ->
@@ -161,9 +144,7 @@ fun MovieDetailScreenContent(
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            overview?.let { text ->
-                                Text(text = text)
-                            }
+                            Text(text = overview)
                         }
                     }
                 }

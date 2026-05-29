@@ -8,6 +8,7 @@ import dagger.hilt.components.SingletonComponent
 import io.github.kotlin.imdb.db.MovieDao
 import io.github.kotlin.imdb.db.MovieDatabase
 import io.github.kotlin.imdb.db.getDatabase
+import io.github.kotlin.imdb.repository.MoviesRepository
 import io.github.kotlin.imdb.service.TmdbService
 import io.github.kotlin.imdb.service.provideTmdbService
 import javax.inject.Singleton
@@ -33,5 +34,11 @@ object MovieServiceModule {
     @Singleton
     fun provideTmdbService(): TmdbService {
         return provideTmdbService(token = Constants.API_KEY_V4)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMoviesRepository(tmdbService: TmdbService, movieDao: MovieDao): MoviesRepository {
+        return MoviesRepository(tmdbService, movieDao)
     }
 }

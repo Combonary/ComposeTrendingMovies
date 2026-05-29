@@ -11,14 +11,14 @@ activityCompose = "1.13.0"
 composeBom = "2026.05.01"
 glide = "1.0.0-beta09"
 hilt-android = "2.59.2"
-ksp = "2.3.8"
+ksp = "2.3.9"
 hiltComposeNavigation = "1.3.0"
 junitKtx = "1.3.0"
 materialIconsExtended = "1.7.8"
 moviesService = "1.0.7"
 room = "2.8.4"
 navigationCompose = "2.9.8"
-kotlinxSerializationJson = "1.7.3"
+kotlinxSerializationJson = "1.11.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

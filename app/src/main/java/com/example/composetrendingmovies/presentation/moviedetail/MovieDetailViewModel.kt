@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.github.kotlin.imdb.service.TmdbService
+import io.github.kotlin.imdb.repository.MoviesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,7 +14,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MovieDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val tmdbService: TmdbService
+    private val moviesRepository: MoviesRepository
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<MovieDetailScreenUiState> =
@@ -35,7 +35,7 @@ class MovieDetailViewModel @Inject constructor(
         _uiState.value = MovieDetailScreenUiState(isLoading = true)
 
         try {
-            val movie = tmdbService.getMovie(id)
+            val movie = moviesRepository.getMovieById(id)
             _uiState.value = MovieDetailScreenUiState(isLoading = false, movie = movie)
         } catch (e: Exception) {
             _uiState.value = MovieDetailScreenUiState(
