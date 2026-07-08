@@ -1,6 +1,5 @@
 package com.example.composetrendingmovies.presentation.moviedetail
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,7 +12,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MovieDetailViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
     private val moviesRepository: MoviesRepository
 ) : ViewModel() {
 
@@ -22,12 +20,9 @@ class MovieDetailViewModel @Inject constructor(
     val uiState: StateFlow<MovieDetailScreenUiState> =
         _uiState.asStateFlow()
 
-
-    init {
-        savedStateHandle.get<Int>("movie_id")?.let { id ->
-            viewModelScope.launch {
-                getMovie(id)
-            }
+    fun loadMovie(id: Int) {
+        viewModelScope.launch {
+            getMovie(id)
         }
     }
 

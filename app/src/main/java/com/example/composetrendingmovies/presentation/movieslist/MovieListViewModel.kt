@@ -2,11 +2,14 @@ package com.example.composetrendingmovies.presentation.movieslist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.composetrendingmovies.utils.Constants
+import com.example.composetrendingmovies.utils.GenreMap
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.kotlin.imdb.repository.MoviesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,11 +24,23 @@ class MovieListViewModel @Inject constructor(
         get() = _uiState.asStateFlow()
 
     init {
-        // Collect movies from the repository - Single Source of Truth
+        // Collect movies from the repository and transform to UI models
         viewModelScope.launch {
-            moviesRepository.movies.collect { movies ->
-                _uiState.update { it.copy(movies = movies, isLoading = false) }
-            }
+            moviesRepository.movies
+                .map { movies ->
+                    movies.map { movie ->
+                        MovieUiModel(
+                            id = movie.id,
+                            title = movie.title,
+                            summary = GenreMap.getGenre(movie.genreIds),
+                            // Pre-concatenate the full URL here
+                            posterPath = Constants.IMAGE_URL + movie.posterPath
+                        )
+                    }
+                }
+                .collect { uiMovies ->
+                    _uiState.update { it.copy(movies = uiMovies, isLoading = false) }
+                }
         }
         
         refreshMovies()

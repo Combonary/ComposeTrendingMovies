@@ -1,9 +1,9 @@
 package com.example.composetrendingmovies.presentation.movieslist
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -27,6 +28,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,7 +39,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
@@ -45,8 +46,6 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
 import com.example.composetrendingmovies.R
 import com.example.composetrendingmovies.presentation.ui.theme.ComposeTrendingMoviesTheme
-import com.example.composetrendingmovies.utils.Constants
-import com.example.composetrendingmovies.utils.GenreMap
 
 @Composable
 fun MovieListScreen(
@@ -58,9 +57,7 @@ fun MovieListScreen(
 
     MoviesListScreenContent(
         onBackClicked = onBackClicked,
-        onMovieItemClicked = {
-            onMovieItemClicked(it)
-        },
+        onMovieItemClicked = onMovieItemClicked,
         uiState = uiState
     )
 }
@@ -112,18 +109,23 @@ fun MoviesListScreenContent(
                         )
                     }
 
-                    uiState.movies?.let {
-                        HorizontalDivider(color = Color.Black)
-                        LazyColumn(Modifier.fillMaxSize()) {
-                            items(uiState.movies) { movie ->
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(
+                                uiState.movies,
+                                key = { movie -> movie.id }
+                            ) { movie ->
                                 MovieItem(
                                     imageUrl = movie.posterPath,
                                     movieName = movie.title,
-                                    summary = GenreMap.getGenre(movie.genreIds),
+                                    summary = movie.summary,
                                     movieId = movie.id,
-                                    onItemSelected = { onMovieItemClicked(it) }
+                                    onItemSelected = onMovieItemClicked
                                 )
-                                HorizontalDivider(color = Color.Cyan)
                             }
                         }
                     }
@@ -142,62 +144,67 @@ fun MovieItem(
     movieId: Int,
     onItemSelected: (Int) -> Unit = {}
 ) {
-    // Use BoxWithConstraints to read available width and adapt image size accordingly
-    BoxWithConstraints(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp)
+    // Memoize the click lambda so ElevatedCard can skip recomposition
+    val onClick = remember(movieId, onItemSelected) {
+        { onItemSelected(movieId) }
+    }
+
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick
     ) {
-        val availableWidth = maxWidth
-        // Choose an image width relative to available width with sensible caps
-        val imageWidth = when {
-            availableWidth < 360.dp -> availableWidth * 0.32f
-            availableWidth < 600.dp -> availableWidth * 0.28f
-            else -> 150.dp
-        }
-
-        // spacing between image and text
-        val spacing = 8.dp
-        val textColumnWidthCandidate = availableWidth - imageWidth - spacing
-        val textColumnWidth = if (textColumnWidthCandidate > 0.dp) textColumnWidthCandidate else 0.dp
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onItemSelected(movieId) },
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Properly remember the placeholder to prevent GlideImage from invalidating the Row
+            val placeholderPainter = remember { placeholder(R.drawable.round_downloading_24) }
+
             GlideImage(
                 modifier = Modifier
-                    .width(imageWidth)
+                    .weight(0.3f)
                     .aspectRatio(2f / 3f)
-                    .padding(end = spacing)
                     .clip(RoundedCornerShape(8.dp)),
-                model = Constants.IMAGE_URL + imageUrl,
+                model = imageUrl,
                 contentDescription = "movie poster",
                 contentScale = ContentScale.Crop,
-                loading = placeholder(R.drawable.round_downloading_24),
-                failure = placeholder(R.drawable.round_downloading_24)
+                loading = placeholderPainter,
+                failure = placeholderPainter
             )
 
-            Column(
+            MovieItemDetails(
+                title = movieName,
+                summary = summary,
                 modifier = Modifier
-                    .width(textColumnWidth)
-                    .padding(start = 4.dp)
-            ) {
-                Text(
-                    modifier = Modifier.padding(4.dp),
-                    text = movieName,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    modifier = Modifier.padding(4.dp),
-                    text = summary,
-                    fontStyle = FontStyle.Italic
-                )
-            }
+                    .weight(0.7f)
+                    .padding(start = 12.dp)
+            )
         }
+    }
+}
+
+@Composable
+private fun MovieItemDetails(
+    title: String,
+    summary: String,
+    modifier: Modifier = Modifier
+) {
+    // We use a Column but apply the weights locally
+    Column(modifier = modifier) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            maxLines = 2
+        )
+        Text(
+            text = summary,
+            style = MaterialTheme.typography.bodyMedium,
+            fontStyle = FontStyle.Italic,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

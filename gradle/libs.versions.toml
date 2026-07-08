@@ -1,23 +1,25 @@
 [versions]
 agp = "9.2.1"
 javapoet = "1.13.0"
-kotlin = "2.3.21"
-coreKtx = "1.18.0"
+kotlin = "2.4.0"
+coreKtx = "1.19.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
-lifecycleRuntimeKtx = "2.10.0"
+lifecycleRuntimeKtx = "2.11.0"
 activityCompose = "1.13.0"
-composeBom = "2026.05.01"
+composeBom = "2026.06.01"
 glide = "1.0.0-beta09"
-hilt-android = "2.59.2"
+hilt-android = "2.60.1"
 ksp = "2.3.9"
-hiltComposeNavigation = "1.3.0"
+hiltComposeNavigation = "1.4.0"
 junitKtx = "1.3.0"
 materialIconsExtended = "1.7.8"
 moviesService = "1.0.7"
 room = "2.8.4"
 navigationCompose = "2.9.8"
+nav3 = "1.1.4"
+lifecycleNav3 = "2.11.0"
 kotlinxSerializationJson = "1.11.0"
 
 [libraries]
@@ -51,6 +53,9 @@ androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = 
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "nav3" }
+androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "nav3" }
+androidx-lifecycle-viewmodel-navigation3 = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version.ref = "lifecycleNav3" }
 
 
 
