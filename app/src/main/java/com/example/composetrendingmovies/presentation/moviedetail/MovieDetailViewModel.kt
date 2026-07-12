@@ -16,7 +16,7 @@ class MovieDetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<MovieDetailScreenUiState> =
-        MutableStateFlow(MovieDetailScreenUiState())
+        MutableStateFlow(MovieDetailScreenUiState.Loading)
     val uiState: StateFlow<MovieDetailScreenUiState> =
         _uiState.asStateFlow()
 
@@ -27,15 +27,14 @@ class MovieDetailViewModel @Inject constructor(
     }
 
     private suspend fun getMovie(id: Int) {
-        _uiState.value = MovieDetailScreenUiState(isLoading = true)
+        _uiState.value = MovieDetailScreenUiState.Loading
 
         try {
             val movie = moviesRepository.getMovieById(id)
-            _uiState.value = MovieDetailScreenUiState(isLoading = false, movie = movie)
+            _uiState.value = MovieDetailScreenUiState.Success(movie)
         } catch (e: Exception) {
-            _uiState.value = MovieDetailScreenUiState(
-                isLoading = false,
-                error = e.message ?: "Unknown error occurred"
+            _uiState.value = MovieDetailScreenUiState.Error(
+                e.message ?: "Unknown error occurred"
             )
         }
     }

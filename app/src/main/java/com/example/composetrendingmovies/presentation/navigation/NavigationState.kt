@@ -2,6 +2,7 @@ package com.example.composetrendingmovies.presentation.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -30,9 +31,14 @@ fun rememberNavigationState(
         mutableStateOf(startRoute)
     }
 
-    val backStacks = topLevelRoutes.associateWith { key -> rememberNavBackStack(key) }
+    val backStacks = remember(topLevelRoutes) { mutableMapOf<NavKey, NavBackStack<NavKey>>() }
+    for (route in topLevelRoutes) {
+        key("backstack", route) {
+            backStacks[route] = rememberNavBackStack(route)
+        }
+    }
 
-    return remember(startRoute, topLevelRoutes) {
+    return remember(startRoute, topLevelRoutes, backStacks) {
         NavigationState(
             startRoute = startRoute,
             topLevelRouteState = topLevelRouteState,
@@ -41,9 +47,10 @@ fun rememberNavigationState(
     }
 }
 
+@Stable
 class NavigationState(
     val startRoute: NavKey,
-    private val topLevelRouteState: MutableState<NavKey>,
+    topLevelRouteState: MutableState<NavKey>,
     val backStacks: Map<NavKey, NavBackStack<NavKey>>
 ) {
     var topLevelRoute: NavKey by topLevelRouteState
@@ -64,16 +71,17 @@ fun NavigationState.toEntries(
     val decorator = rememberSaveableStateHolderNavEntryDecorator<NavKey>()
     val decorators = remember(decorator) { listOf(decorator) }
 
-    // Flatten all entries from the active stacks
-    return stacksInUse.flatMap { stackKey ->
-        val stack = backStacks[stackKey] ?: return@flatMap emptyList()
-        // Use key() to ensure each stack has its own stable composition point
-        key(stackKey) {
+    val allEntries = mutableListOf<NavEntry<NavKey>>()
+    for (stackKey in stacksInUse) {
+        val stack = backStacks[stackKey] ?: continue
+        val entries = key(stackKey) {
             rememberDecoratedNavEntries(
                 backStack = stack,
                 entryDecorators = decorators,
                 entryProvider = entryProvider
             )
         }
+        allEntries.addAll(entries)
     }
+    return allEntries
 }

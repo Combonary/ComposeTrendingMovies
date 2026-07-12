@@ -71,8 +71,8 @@ dependencies {
     implementation(libs.androidx.junit.ktx)
     ksp(libs.hilt.android.compiler)
     ksp(libs.hilt.compiler)
-    implementation(libs.androidx.lifecycle.viemmodel.ktx)
-    implementation(libs.androidx.lifecycle.viemmodel.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.glide)
     implementation(libs.javapoet)
     // MoviesService

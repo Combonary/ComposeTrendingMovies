@@ -1,7 +1,6 @@
 package com.example.composetrendingmovies.presentation.moviedetail
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -40,7 +40,6 @@ import com.bumptech.glide.integration.compose.placeholder
 import com.example.composetrendingmovies.R
 import com.example.composetrendingmovies.presentation.ui.theme.ComposeTrendingMoviesTheme
 import com.example.composetrendingmovies.utils.Constants
-import io.github.kotlin.imdb.model.MovieEntity
 
 @Composable
 fun MovieDetailScreen(
@@ -67,37 +66,30 @@ fun MovieDetailScreenContent(
     onBackClicked: () -> Unit,
     uiState: MovieDetailScreenUiState
 ) {
-    // Derive concrete values from the sealed UI state
-    val loading = uiState.isLoading
-    val movie = uiState.movie
-    val errorMessage: String? = uiState.error
-
-    ComposeTrendingMoviesTheme {
-
-        Scaffold(
-            topBar = {
-                CenterAlignedTopAppBar(
-                    title = { Text("Movie Detail") },
-                    navigationIcon = {
-                        IconButton(onClick = onBackClicked) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Go Back"
-                            )
-                        }
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Movie Detail") },
+                navigationIcon = {
+                    IconButton(onClick = onBackClicked) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Go Back"
+                        )
                     }
-                )
-            }
-        ) { paddingValues ->
-            Surface(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState()),
-                color = MaterialTheme.colorScheme.background
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    if (loading) {
+                }
+            )
+        }
+    ) { paddingValues ->
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                when (uiState) {
+                    is MovieDetailScreenUiState.Loading -> {
                         CircularProgressIndicator(
                             modifier = Modifier
                                 .width(64.dp)
@@ -107,45 +99,49 @@ fun MovieDetailScreenContent(
                         )
                     }
 
-                    // Show error if present
-                    errorMessage?.let { msg ->
+                    is MovieDetailScreenUiState.Error -> {
                         Text(
-                            text = msg,
+                            text = uiState.message,
                             modifier = Modifier.align(Alignment.Center),
                             color = MaterialTheme.colorScheme.error
                         )
                     }
 
-                    // Content for successful movie load
-                    movie?.let {
+                    is MovieDetailScreenUiState.Success -> {
+                        val movie = uiState.movie
                         Column(
-                            modifier = Modifier.padding(8.dp)
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                                .padding(8.dp)
                         ) {
                             val posterPath = movie.posterPath
                             val overview = movie.overview
 
-                            // Responsive poster: center and size based on available width
+                            // Responsive poster: center and size based on screen width
                             posterPath?.let { path ->
-                                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                                    BoxWithConstraints {
-                                        val maxW = maxWidth
-                                        val imageWidth = when {
-                                            maxW < 360.dp -> maxW * 0.95f
-                                            maxW < 600.dp -> maxW * 0.8f
-                                            else -> 600.dp
-                                        }
+                                val configuration = LocalConfiguration.current
+                                val screenWidth = configuration.screenWidthDp.dp
+                                val imageWidth = when {
+                                    screenWidth < 360.dp -> screenWidth * 0.95f
+                                    screenWidth < 600.dp -> screenWidth * 0.8f
+                                    else -> 600.dp
+                                }
 
-                                        GlideImage(
-                                            modifier = Modifier
-                                                .width(imageWidth)
-                                                .aspectRatio(2f / 3f)
-                                                .clip(RoundedCornerShape(8.dp)),
-                                            model = Constants.IMAGE_URL + path,
-                                            contentDescription = "Movie poster",
-                                            loading = placeholder(R.drawable.round_downloading_24),
-                                            failure = placeholder(R.drawable.round_downloading_24)
-                                        )
-                                    }
+                                Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    GlideImage(
+                                        modifier = Modifier
+                                            .width(imageWidth)
+                                            .aspectRatio(2f / 3f)
+                                            .clip(RoundedCornerShape(8.dp)),
+                                        model = Constants.IMAGE_URL + path,
+                                        contentDescription = "Movie poster",
+                                        loading = placeholder(R.drawable.round_downloading_24),
+                                        failure = placeholder(R.drawable.round_downloading_24)
+                                    )
                                 }
                             }
 
@@ -163,13 +159,10 @@ fun MovieDetailScreenContent(
 @Preview(showBackground = true)
 @Composable
 fun MovieDetailScreenContentPreview() {
-    MovieDetailScreenContent(
-        onBackClicked = {},
-        uiState = MovieDetailScreenUiState(
-            isLoading = false,
-            movie = null,
-            error = null
+    ComposeTrendingMoviesTheme {
+        MovieDetailScreenContent(
+            onBackClicked = {},
+            uiState = MovieDetailScreenUiState.Loading
         )
-    )
-
+    }
 }

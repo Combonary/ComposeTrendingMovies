@@ -19,7 +19,6 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,11 +31,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -69,64 +68,59 @@ fun MoviesListScreenContent(
     onMovieItemClicked: (Int) -> Unit = {},
     uiState: MovieListScreenUIState
 ) {
-    ComposeTrendingMoviesTheme {
-        Scaffold(
-            topBar = {
-                CenterAlignedTopAppBar(
-                    title = { Text(stringResource(R.string.movie_list_activity_title)) },
-                    navigationIcon = {
-                        IconButton(onClick = onBackClicked) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Close App"
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text(stringResource(R.string.movie_list_activity_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onBackClicked) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Close App"
+                        )
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+
+        // A surface container using the 'background' color from the theme
+        Surface(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (uiState.isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .width(64.dp)
+                            .align(Alignment.Center),
+                        color = MaterialTheme.colorScheme.secondary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                } else if (uiState.error != null) {
+                    Text(
+                        text = uiState.error,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(
+                            uiState.movies,
+                            key = { movie -> movie.id }
+                        ) { movie ->
+                            MovieItem(
+                                imageUrl = movie.posterPath,
+                                movieName = movie.title,
+                                summary = movie.summary,
+                                movieId = movie.id,
+                                onItemSelected = onMovieItemClicked
                             )
-                        }
-                    }
-                )
-            }
-        ) { paddingValues ->
-
-            // A surface container using the 'background' color from the theme
-            Surface(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .fillMaxSize()
-            ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier
-                                .width(64.dp)
-                                .align(Alignment.Center),
-                            color = MaterialTheme.colorScheme.secondary,
-                            trackColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    }
-                    uiState.error?.let {
-                        Text(
-                            text = uiState.error,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            items(
-                                uiState.movies,
-                                key = { movie -> movie.id }
-                            ) { movie ->
-                                MovieItem(
-                                    imageUrl = movie.posterPath,
-                                    movieName = movie.title,
-                                    summary = movie.summary,
-                                    movieId = movie.id,
-                                    onItemSelected = onMovieItemClicked
-                                )
-                            }
                         }
                     }
                 }
@@ -159,19 +153,12 @@ fun MovieItem(
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Properly remember the placeholder to prevent GlideImage from invalidating the Row
-            val placeholderPainter = remember { placeholder(R.drawable.round_downloading_24) }
-
-            GlideImage(
+            MoviePoster(
+                imageUrl = imageUrl,
                 modifier = Modifier
                     .weight(0.3f)
                     .aspectRatio(2f / 3f)
-                    .clip(RoundedCornerShape(8.dp)),
-                model = imageUrl,
-                contentDescription = "movie poster",
-                contentScale = ContentScale.Crop,
-                loading = placeholderPainter,
-                failure = placeholderPainter
+                    .clip(RoundedCornerShape(8.dp))
             )
 
             MovieItemDetails(
@@ -185,33 +172,55 @@ fun MovieItem(
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+private fun MoviePoster(
+    imageUrl: String?,
+    modifier: Modifier = Modifier
+) {
+    GlideImage(
+        modifier = modifier,
+        model = imageUrl,
+        contentDescription = "movie poster",
+        contentScale = ContentScale.Crop,
+        loading = placeholder(R.drawable.round_downloading_24),
+        failure = placeholder(R.drawable.round_downloading_24)
+    )
+}
+
 @Composable
 private fun MovieItemDetails(
     title: String,
     summary: String,
     modifier: Modifier = Modifier
 ) {
-    // We use a Column but apply the weights locally
     Column(modifier = modifier) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
-            maxLines = 2
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
         )
-        Text(
-            text = summary,
-            style = MaterialTheme.typography.bodyMedium,
-            fontStyle = FontStyle.Italic,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        if (summary.isNotBlank()) {
+            Text(
+                text = summary,
+                style = MaterialTheme.typography.bodyMedium,
+                fontStyle = FontStyle.Italic,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
 
 @Preview
 @Composable
 fun MovieListScreenPreview() {
-    MoviesListScreenContent(
-        uiState = MovieListScreenUIState()
-    )
+    ComposeTrendingMoviesTheme {
+        MoviesListScreenContent(
+            uiState = MovieListScreenUIState()
+        )
+    }
 }

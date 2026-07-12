@@ -39,25 +39,29 @@ class MovieListViewModel @Inject constructor(
                     }
                 }
                 .collect { uiMovies ->
-                    _uiState.update { it.copy(movies = uiMovies, isLoading = false) }
+                    _uiState.update { it.copy(movies = uiMovies, isLoading = it.movies.isEmpty() && it.isLoading) }
                 }
         }
-        
+
         refreshMovies()
     }
 
     private fun refreshMovies() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = it.movies.isEmpty()) }
             try {
                 moviesRepository.refreshMovies()
             } catch (e: Exception) {
-                _uiState.update { 
-                    it.copy(
-                        isLoading = false, 
-                        error = e.message ?: "Unknown error occurred"
-                    ) 
+                if (_uiState.value.movies.isEmpty()) {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = e.message ?: "Unknown error occurred"
+                        )
+                    }
                 }
+            } finally {
+                _uiState.update { it.copy(isLoading = false) }
             }
         }
     }
