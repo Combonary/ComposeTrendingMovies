@@ -7,10 +7,11 @@ import com.example.composetrendingmovies.utils.GenreMap
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.kotlin.imdb.repository.MoviesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,50 +19,44 @@ import javax.inject.Inject
 class MovieListViewModel @Inject constructor(
     private val moviesRepository: MoviesRepository
 ) : ViewModel() {
-    private val _uiState: MutableStateFlow<MovieListScreenUIState> =
-        MutableStateFlow(MovieListScreenUIState())
-    val uiState: StateFlow<MovieListScreenUIState>
-        get() = _uiState.asStateFlow()
+    private val _isLoading = MutableStateFlow(false)
+    private val _error = MutableStateFlow<String?>(null)
+
+    val uiState: StateFlow<MovieListScreenUIState> = moviesRepository.movies
+        .map { movies ->
+            movies.map { movie ->
+                MovieUiModel(
+                    id = movie.id,
+                    title = movie.title,
+                    summary = GenreMap.getGenre(movie.genreIds),
+                    // Pre-concatenate the full URL here
+                    posterPath = Constants.IMAGE_URL + movie.posterPath
+                )
+            }
+        }
+        .combine(_isLoading) { movies, isLoading ->
+            MovieListScreenUIState(
+                movies = movies,
+                isLoading = isLoading,
+                error = _error.value
+            )
+        }
+        .stateIn(viewModelScope, SharingStarted.Lazily, MovieListScreenUIState())
 
     init {
-        // Collect movies from the repository and transform to UI models
-        viewModelScope.launch {
-            moviesRepository.movies
-                .map { movies ->
-                    movies.map { movie ->
-                        MovieUiModel(
-                            id = movie.id,
-                            title = movie.title,
-                            summary = GenreMap.getGenre(movie.genreIds),
-                            // Pre-concatenate the full URL here
-                            posterPath = Constants.IMAGE_URL + movie.posterPath
-                        )
-                    }
-                }
-                .collect { uiMovies ->
-                    _uiState.update { it.copy(movies = uiMovies, isLoading = it.movies.isEmpty() && it.isLoading) }
-                }
-        }
-
         refreshMovies()
     }
 
     private fun refreshMovies() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = it.movies.isEmpty()) }
+            _isLoading.value = true
+            _error.value = null
             try {
                 moviesRepository.refreshMovies()
             } catch (e: Exception) {
-                if (_uiState.value.movies.isEmpty()) {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = e.message ?: "Unknown error occurred"
-                        )
-                    }
-                }
+                _error.value = e.message ?: "Unknown error occurred"
             } finally {
-                _uiState.update { it.copy(isLoading = false) }
+                _isLoading.value = false
             }
         }
     }

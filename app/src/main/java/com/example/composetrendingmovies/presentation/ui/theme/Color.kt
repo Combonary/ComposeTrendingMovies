@@ -9,3 +9,7 @@ val Pink80 = Color(0xFFEFB8C8)
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
+
+// Use 0xAARRGGBB hex literal (alpha first). "#C0C0C0" -> 0xFFC0C0C0 for opaque silver.
+val Silver = Color(0xFFC0C0C0)
+val platinum = Color(0xFFE5E4E2)

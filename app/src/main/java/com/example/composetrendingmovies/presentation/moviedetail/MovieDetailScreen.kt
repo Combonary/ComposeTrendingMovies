@@ -3,12 +3,12 @@ package com.example.composetrendingmovies.presentation.moviedetail
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -29,7 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -69,7 +69,13 @@ fun MovieDetailScreenContent(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Movie Detail") },
+                title = {
+                    if (uiState is MovieDetailScreenUiState.Success) {
+                        Text(text = uiState.movie.title)
+                    } else {
+                        Text(text = "Movie Details")
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClicked) {
                         Icon(
@@ -120,8 +126,8 @@ fun MovieDetailScreenContent(
 
                             // Responsive poster: center and size based on screen width
                             posterPath?.let { path ->
-                                val configuration = LocalConfiguration.current
-                                val screenWidth = configuration.screenWidthDp.dp
+                                val configuration = LocalWindowInfo.current.containerDpSize
+                                val screenWidth = configuration.width
                                 val imageWidth = when {
                                     screenWidth < 360.dp -> screenWidth * 0.95f
                                     screenWidth < 600.dp -> screenWidth * 0.8f
