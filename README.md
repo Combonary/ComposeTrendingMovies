@@ -38,3 +38,14 @@ This project serves as a demonstration of a clean architecture approach, utilizi
 1. Clone the repository.
 2. Open the project in Android Studio.
 3. Sync Gradle and run the app on an emulator or physical device.
+
+## Screenshots
+
+### Light Mode
+![Movie List Screen](screenshots/list.png)
+
+### Dark Mode
+![Movie List Dark](screenshots/light_mode.png)
+
+### Movie Detail
+![Movie Detail Screen](screenshots/detail.png)
